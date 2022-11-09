@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Capabilities.V1.xml">
+    <edmx:Include Alias="Capabilities" Namespace="Org.OData.Capabilities.V1"/>
+  </edmx:Reference>
+  <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+    <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+  </edmx:Reference>
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+    <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1"/>
+  </edmx:Reference>
+  <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
+    <edmx:Include Alias="UI" Namespace="com.sap.vocabularies.UI.v1"/>
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema Namespace="CatalogService" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityContainer Name="EntityContainer">
+        <EntitySet Name="Books" EntityType="CatalogService.Books"/>
+        <EntitySet Name="FileInfo" EntityType="CatalogService.FileInfo"/>
+        <EntitySet Name="FileContent" EntityType="CatalogService.FileContent"/>
+        <EntitySet Name="DataVolumeSnapshots" EntityType="CatalogService.DataVolumeSnapshots">
+          <NavigationPropertyBinding Path="readinessCheckFile" Target="ReadinessCheckFiles"/>
+        </EntitySet>
+        <EntitySet Name="ReadinessCheckFiles" EntityType="CatalogService.ReadinessCheckFiles">
+          <NavigationPropertyBinding Path="status" Target="UploadStatuses"/>
+        </EntitySet>
+        <EntitySet Name="UploadStatuses" EntityType="CatalogService.UploadStatuses">
+          <NavigationPropertyBinding Path="texts" Target="UploadStatuses_texts"/>
+          <NavigationPropertyBinding Path="localized" Target="UploadStatuses_texts"/>
+        </EntitySet>
+        <EntitySet Name="UploadStatuses_texts" EntityType="CatalogService.UploadStatuses_texts"/>
+      </EntityContainer>
+      <EntityType Name="Books">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="title" Type="Edm.String"/>
+        <Property Name="stock" Type="Edm.Int32"/>
+      </EntityType>
+      <EntityType Name="FileInfo">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.String" Nullable="false"/>
+        <Property Name="name" Type="Edm.String"/>
+        <Property Name="size" Type="Edm.Int64"/>
+        <Property Name="date" Type="Edm.String"/>
+      </EntityType>
+      <EntityType Name="FileContent">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.String" Nullable="false"/>
+        <Property Name="content" Type="Edm.Binary"/>
+      </EntityType>
+      <EntityType Name="DataVolumeSnapshots">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Guid" Nullable="false"/>
+        <NavigationProperty Name="readinessCheckFile" Type="CatalogService.ReadinessCheckFiles">
+          <ReferentialConstraint Property="readinessCheckFile_ID" ReferencedProperty="ID"/>
+        </NavigationProperty>
+        <Property Name="readinessCheckFile_ID" Type="Edm.Guid"/>
+      </EntityType>
+      <EntityType Name="ReadinessCheckFiles">
+        <Key>
+          <PropertyRef Name="ID"/>
+        </Key>
+        <Property Name="ID" Type="Edm.Guid" Nullable="false"/>
+        <Property Name="createdAt" Type="Edm.DateTimeOffset" Precision="7"/>
+        <Property Name="createdBy" Type="Edm.String" MaxLength="255"/>
+        <Property Name="modifiedAt" Type="Edm.DateTimeOffset" Precision="7"/>
+        <Property Name="modifiedBy" Type="Edm.String" MaxLength="255"/>
+        <Property Name="file" Type="Edm.Stream"/>
+        <Property Name="fileType" Type="Edm.String"/>
+        <Property Name="fileName" Type="Edm.String" MaxLength="50"/>
+        <Property Name="notes" Type="Edm.String" MaxLength="255"/>
+        <Property Name="systemId" Type="Edm.String" MaxLength="3"/>
+        <NavigationProperty Name="status" Type="CatalogService.UploadStatuses">
+          <ReferentialConstraint Property="status_code" ReferencedProperty="code"/>
+        </NavigationProperty>
+        <Property Name="status_code" Type="Edm.String" MaxLength="1"/>
+        <Property Name="clientId" Type="Edm.String" MaxLength="5"/>
+      </EntityType>
+      <EntityType Name="UploadStatuses">
+        <Key>
+          <PropertyRef Name="code"/>
+        </Key>
+        <Property Name="name" Type="Edm.String" MaxLength="255"/>
+        <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+        <Property Name="code" Type="Edm.String" MaxLength="1" Nullable="false"/>
+        <Property Name="criticality" Type="Edm.String" MaxLength="20"/>
+        <NavigationProperty Name="texts" Type="Collection(CatalogService.UploadStatuses_texts)">
+          <OnDelete Action="Cascade"/>
+        </NavigationProperty>
+        <NavigationProperty Name="localized" Type="CatalogService.UploadStatuses_texts">
+          <ReferentialConstraint Property="code" ReferencedProperty="code"/>
+        </NavigationProperty>
+      </EntityType>
+      <EntityType Name="UploadStatuses_texts">
+        <Key>
+          <PropertyRef Name="locale"/>
+          <PropertyRef Name="code"/>
+        </Key>
+        <Property Name="locale" Type="Edm.String" MaxLength="14" Nullable="false"/>
+        <Property Name="name" Type="Edm.String" MaxLength="255"/>
+        <Property Name="descr" Type="Edm.String" MaxLength="1000"/>
+        <Property Name="code" Type="Edm.String" MaxLength="1" Nullable="false"/>
+      </EntityType>
+      <Annotations Target="CatalogService.EntityContainer/Books">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.EntityContainer/FileInfo">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.EntityContainer/FileContent">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.DataVolumeSnapshots">
+        <Annotation Term="Core.Description" String="Represents information about performed readiness check.&#xA;In particular, can be provided as a content of a Readiness Check File."/>
+      </Annotations>
+      <Annotations Target="CatalogService.EntityContainer/DataVolumeSnapshots">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles">
+        <Annotation Term="Core.Description" String="Represents information about readiness check files.&#xA;The content of a file is represented by DataVolumeSnaphot entity."/>
+      </Annotations>
+      <Annotations Target="CatalogService.EntityContainer/ReadinessCheckFiles">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/createdAt">
+        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+        <Annotation Term="Core.Immutable" Bool="true"/>
+        <Annotation Term="Core.Computed" Bool="true"/>
+        <Annotation Term="Common.Label" String="Date de création"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/createdBy">
+        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+        <Annotation Term="Core.Immutable" Bool="true"/>
+        <Annotation Term="Core.Computed" Bool="true"/>
+        <Annotation Term="Core.Description" String="ID unique de l'utilisateur"/>
+        <Annotation Term="Common.Label" String="Auteur de la création"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/modifiedAt">
+        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+        <Annotation Term="Core.Computed" Bool="true"/>
+        <Annotation Term="Common.Label" String="Date de modification"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/modifiedBy">
+        <Annotation Term="UI.HiddenFilter" Bool="true"/>
+        <Annotation Term="Core.Computed" Bool="true"/>
+        <Annotation Term="Core.Description" String="ID unique de l'utilisateur"/>
+        <Annotation Term="Common.Label" String="Auteur de la modification"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/file">
+        <Annotation Term="Core.MediaType" Path="fileType"/>
+        <Annotation Term="Core.ContentDisposition">
+          <Record Type="Core.ContentDispositionType">
+            <PropertyValue Property="Filename" Path="fileName"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/fileType">
+        <Annotation Term="Core.IsMediaType" Bool="true"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/fileName">
+        <Annotation Term="Common.FieldControl" EnumMember="Common.FieldControlType/Mandatory"/>
+      </Annotations>
+      <Annotations Target="CatalogService.ReadinessCheckFiles/status_code">
+        <Annotation Term="Common.ValueList">
+          <Record Type="Common.ValueListType">
+            <PropertyValue Property="Label" String="UploadStatuses"/>
+            <PropertyValue Property="CollectionPath" String="UploadStatuses"/>
+            <PropertyValue Property="Parameters">
+              <Collection>
+                <Record Type="Common.ValueListParameterInOut">
+                  <PropertyValue Property="LocalDataProperty" PropertyPath="status_code"/>
+                  <PropertyValue Property="ValueListProperty" String="code"/>
+                </Record>
+                <Record Type="Common.ValueListParameterDisplayOnly">
+                  <PropertyValue Property="ValueListProperty" String="name"/>
+                </Record>
+              </Collection>
+            </PropertyValue>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses">
+        <Annotation Term="UI.Identification">
+          <Collection>
+            <Record Type="UI.DataField">
+              <PropertyValue Property="Value" Path="name"/>
+            </Record>
+          </Collection>
+        </Annotation>
+        <Annotation Term="Core.Description" String="Upload status of a readiness check file."/>
+      </Annotations>
+      <Annotations Target="CatalogService.EntityContainer/UploadStatuses">
+        <Annotation Term="Capabilities.DeleteRestrictions">
+          <Record Type="Capabilities.DeleteRestrictionsType">
+            <PropertyValue Property="Deletable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.InsertRestrictions">
+          <Record Type="Capabilities.InsertRestrictionsType">
+            <PropertyValue Property="Insertable" Bool="false"/>
+          </Record>
+        </Annotation>
+        <Annotation Term="Capabilities.UpdateRestrictions">
+          <Record Type="Capabilities.UpdateRestrictionsType">
+            <PropertyValue Property="Updatable" Bool="false"/>
+          </Record>
+        </Annotation>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses/name">
+        <Annotation Term="Common.Label" String="Nom"/>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses/descr">
+        <Annotation Term="Common.Label" String="Description"/>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses_texts/locale">
+        <Annotation Term="Common.Label" String="Code langue"/>
+        <Annotation Term="Core.Description" String="Type for a language code"/>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses_texts/name">
+        <Annotation Term="Common.Label" String="Nom"/>
+      </Annotations>
+      <Annotations Target="CatalogService.UploadStatuses_texts/descr">
+        <Annotation Term="Common.Label" String="Description"/>
+      </Annotations>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>
